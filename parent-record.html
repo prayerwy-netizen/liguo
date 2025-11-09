@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>快速记账 - 梨果礼物兑换系统</title>
+  <link rel="stylesheet" href="css/common.css?v=5">
+  <link rel="stylesheet" href="css/components.css?v=5">
+  <style>
+    body {
+      background: var(--bg-light);
+      padding-bottom: 100px;
+    }
+
+    .page-content {
+      padding: var(--spacing-md);
+      max-width: 900px;
+      margin: 0 auto;
+    }
+
+    .section-title {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: var(--spacing-md);
+      padding-left: 4px;
+    }
+
+    .date-selector {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-md);
+      box-shadow: var(--shadow-normal);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .date-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin-bottom: var(--spacing-sm);
+      display: block;
+    }
+
+    .date-input {
+      width: 100%;
+      height: 44px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 0 var(--spacing-md);
+      font-size: 16px;
+      color: var(--text-dark);
+      transition: all var(--transition-normal) ease;
+    }
+
+    .date-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    }
+
+    .tasks-table {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      box-shadow: var(--shadow-normal);
+      margin-bottom: var(--spacing-md);
+    }
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 2fr 1.5fr 1fr 80px;
+      background: var(--primary-color);
+      color: var(--white);
+      padding: 12px var(--spacing-md);
+      font-size: 14px;
+      font-weight: 600;
+      gap: var(--spacing-sm);
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 2fr 1.5fr 1fr 80px;
+      padding: 12px var(--spacing-md);
+      gap: var(--spacing-sm);
+      border-bottom: 1px solid var(--border-color);
+      align-items: center;
+      transition: background var(--transition-normal) ease;
+    }
+
+    .table-row:last-child {
+      border-bottom: none;
+    }
+
+    .table-row:hover {
+      background: var(--bg-light);
+    }
+
+    .task-name {
+      font-size: 14px;
+      color: var(--text-dark);
+      font-weight: 500;
+    }
+
+    .task-unit {
+      font-size: 13px;
+      color: var(--text-medium);
+    }
+
+    .task-score {
+      font-size: 14px;
+      color: var(--gold-color);
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .count-input {
+      width: 70px;
+      height: 36px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-dark);
+      transition: all var(--transition-normal) ease;
+    }
+
+    .count-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    }
+
+    .count-input:not(:placeholder-shown) {
+      background: #FFF9E6;
+      border-color: var(--gold-color);
+    }
+
+    .submit-section {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-md);
+      box-shadow: var(--shadow-normal);
+    }
+
+    .note-group {
+      margin-bottom: var(--spacing-md);
+    }
+
+    .note-label {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin-bottom: var(--spacing-sm);
+      display: block;
+    }
+
+    .char-count {
+      text-align: right;
+      font-size: 12px;
+      color: var(--text-light);
+      margin-top: var(--spacing-xs);
+    }
+
+    .parent-menu {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: var(--white);
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      padding: var(--spacing-md);
+      gap: var(--spacing-sm);
+      z-index: 10;
+    }
+
+    .menu-btn {
+      flex: 1;
+      height: 44px;
+      background: var(--white);
+      border: 1px solid var(--primary-color);
+      color: var(--primary-color);
+      font-size: 14px;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-normal) ease;
+    }
+
+    .menu-btn:active {
+      background: var(--primary-color);
+      color: var(--white);
+    }
+
+    @media (max-width: 767px) {
+      .table-header, .table-row {
+        grid-template-columns: 1.5fr 1.2fr 0.8fr 70px;
+        padding: 10px 8px;
+        font-size: 12px;
+      }
+
+      .task-name {
+        font-size: 13px;
+      }
+
+      .task-unit {
+        font-size: 11px;
+      }
+
+      .task-score {
+        font-size: 13px;
+      }
+
+      .count-input {
+        width: 60px;
+        height: 32px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- 顶部导航栏 -->
+  <div class="top-nav">
+    <div class="top-nav-left">
+      <button onclick="window.location.href='index.html'">◀ 返回</button>
+    </div>
+    <div class="top-nav-title">快速记账</div>
+    <div class="top-nav-right">
+      <button onclick="utils.exitParentMode()">退出</button>
+    </div>
+  </div>
+
+  <div class="page-content">
+    <h2 class="section-title">选择任务并填写分数</h2>
+
+    <!-- 日期选择器 -->
+    <div class="date-selector">
+      <label class="date-label">记账日期</label>
+      <input type="date" class="date-input" id="recordDate">
+    </div>
+
+    <div class="tasks-table">
+      <div class="table-header">
+        <div>任务名称</div>
+        <div>计量单位</div>
+        <div>参考分数</div>
+        <div>分数</div>
+      </div>
+      <div id="tasksTableBody"></div>
+    </div>
+
+    <div class="submit-section">
+      <div class="note-group">
+        <label class="note-label">添加备注（可选）</label>
+        <textarea class="textarea" id="noteInput" placeholder="添加备注信息..." maxlength="200" oninput="updateCharCount()"></textarea>
+        <div class="char-count" id="charCount">0/200</div>
+      </div>
+
+      <button type="button" class="btn-primary btn-full" onclick="submitRecords()">提交记账</button>
+    </div>
+  </div>
+
+  <!-- 底部菜单 -->
+  <div class="parent-menu">
+    <button class="menu-btn" onclick="window.location.href='parent-tasks.html'">任务管理</button>
+    <button class="menu-btn" onclick="window.location.href='parent-gifts.html'">礼物管理</button>
+    <button class="menu-btn" onclick="window.location.href='parent-approval.html'">兑换审批</button>
+    <button class="menu-btn" onclick="window.location.href='parent-settings.html'">设置</button>
+  </div>
+
+  <!-- Supabase 客户端库 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase 配置 -->
+  <script src="js/supabase-config.js?v=1"></script>
+  <script src="js/common.js?v=5"></script>
+  <script>
+    utils.requireParentMode();
+
+    let tasks = []; // 全局变量存储任务列表
+
+    // 初始化函数
+    async function init() {
+      // 等待云同步完成
+      if (window.supabaseSync && window.supabaseSync.enabled) {
+        try {
+          await window.supabaseSync.init();
+          console.log('✅ 云同步完成,开始加载任务');
+        } catch (error) {
+          console.error('❌ 云同步失败,使用本地数据:', error);
+        }
+      }
+
+      // 初始化日期选择器，默认为今天
+      const dateInput = document.getElementById('recordDate');
+      const today = new Date();
+      // 使用本地时区格式化日期,避免时区问题
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
+      console.log('🔧 [v2.0] 日期初始化 - 当前日期:', todayStr, '| 本地时间:', today.toLocaleString(), '| UTC时间:', today.toISOString());
+      console.log('🔧 [v2.0] 设置 dateInput.value =', todayStr, '| dateInput.max =', todayStr);
+      dateInput.value = todayStr;
+      dateInput.max = todayStr; // 不能选择未来日期
+      console.log('🔧 [v2.0] 验证 dateInput.value =', dateInput.value);
+
+      // 加载任务列表并渲染表格
+      tasks = dataManager.getTasks().filter(t => t.enabled);
+      const tableBody = document.getElementById('tasksTableBody');
+
+      tasks.forEach(task => {
+        const row = document.createElement('div');
+        row.className = 'table-row';
+
+        const scorePrefix = task.score >= 0 ? '+' : '';
+
+        row.innerHTML = `
+          <div class="task-name">${task.name}</div>
+          <div class="task-unit">${task.unit}</div>
+          <div class="task-score">${scorePrefix}${task.score}</div>
+          <div>
+            <input type="number"
+                   class="count-input"
+                   id="score-${task.id}"
+                   placeholder="0"
+                   data-task-id="${task.id}"
+                   data-task-name="${task.name}">
+          </div>
+        `;
+
+        tableBody.appendChild(row);
+      });
+    }
+
+    // 执行初始化
+    init();
+
+    function updateCharCount() {
+      const note = document.getElementById('noteInput').value;
+      document.getElementById('charCount').textContent = `${note.length}/200`;
+    }
+
+    function submitRecords() {
+      const note = document.getElementById('noteInput').value;
+      const selectedDate = document.getElementById('recordDate').value;
+      const records = [];
+
+      // 验证日期
+      if (!selectedDate) {
+        utils.showToast('请选择记账日期', 'warning');
+        return;
+      }
+
+      // 将选择的日期转换为ISO字符串（设置为当天的中午12点，避免时区问题）
+      const recordDate = new Date(selectedDate + 'T12:00:00');
+      const recordDateISO = recordDate.toISOString();
+
+      // 收集所有填写了分数的任务
+      tasks.forEach(task => {
+        const scoreInput = document.getElementById(`score-${task.id}`);
+        const score = parseInt(scoreInput.value) || 0;
+
+        if (score !== 0) {
+          records.push({
+            taskId: task.id,
+            taskName: task.name,
+            score: score,
+            note: note || '',
+            date: recordDateISO  // 使用选择的日期
+          });
+        }
+      });
+
+      if (records.length === 0) {
+        utils.showToast('请至少填写一项任务分数', 'warning');
+        return;
+      }
+
+      // 批量添加记录
+      records.forEach(record => {
+        dataManager.addRecord(record);
+      });
+
+      // 判断是否为今天
+      const today = new Date();
+      const year = today.getFullYear();
+      const month = String(today.getMonth() + 1).padStart(2, '0');
+      const day = String(today.getDate()).padStart(2, '0');
+      const todayStr = `${year}-${month}-${day}`;
+      const dateStr = selectedDate === todayStr ? '今天' : selectedDate;
+      utils.showToast(`成功记录${dateStr}的${records.length}项任务！`);
+
+      // 重置所有输入框
+      tasks.forEach(task => {
+        document.getElementById(`score-${task.id}`).value = '';
+      });
+      document.getElementById('noteInput').value = '';
+      document.getElementById('charCount').textContent = '0/200';
+
+      // 滚动到顶部
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+</body>
+</html>

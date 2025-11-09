@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <title>梨果礼物兑换系统 - 首页</title>
+  <link rel="stylesheet" href="css/common.css?v=6">
+  <link rel="stylesheet" href="css/components.css?v=6">
+  <style>
+    /* 页面容器 */
+    .page-container {
+      min-height: 100vh;
+      padding-bottom: 70px;
+      background: var(--bg-light);
+    }
+
+    /* 小元宝总分容器 - 优化尺寸 */
+    .ingot-container {
+      width: 90%;
+      max-width: 1100px;
+      margin: 12px auto;
+      padding: 12px 16px;
+      background: linear-gradient(135deg, var(--gold-color), var(--gold-light));
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-gold);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+      transition: transform var(--transition-normal) ease;
+    }
+
+    .ingot-container:active {
+      transform: scale(0.98);
+    }
+
+    .ingot-icon {
+      width: 40px;
+      height: 40px;
+      font-size: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+    }
+
+    .ingot-score {
+      flex: 1;
+      text-align: right;
+    }
+
+    .ingot-label {
+      font-size: 13px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: 2px;
+    }
+
+    .ingot-number {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--white);
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+      font-family: var(--font-mono);
+    }
+
+    /* 日历容器 - 优化尺寸 */
+    .calendar-card {
+      width: 90%;
+      max-width: 1100px;
+      margin: 0 auto 8px;
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-normal);
+      padding: 18px;
+    }
+
+    .calendar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .calendar-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .calendar-nav {
+      display: flex;
+      gap: var(--spacing-sm);
+    }
+
+    .calendar-nav button {
+      width: 36px;
+      height: 36px;
+      border-radius: var(--radius-md);
+      background: var(--bg-light);
+      color: var(--primary-color);
+      font-size: 18px;
+      transition: all var(--transition-normal) ease;
+    }
+
+    .calendar-nav button:hover {
+      background: var(--primary-color);
+      color: var(--white);
+    }
+
+    .calendar-weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      margin-bottom: 5px;
+    }
+
+    .calendar-weekday {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-medium);
+      padding: 5px 0;
+      font-weight: 500;
+    }
+
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+    }
+
+    .calendar-day {
+      min-height: 66px;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-sm);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-normal) ease;
+      position: relative;
+      padding: 7px 5px;
+      font-size: 15px;
+    }
+
+    .calendar-day.empty {
+      border: none;
+      cursor: default;
+    }
+
+    .calendar-day.today {
+      border: 2px solid var(--gold-color);
+      background: #FFF9E6;
+    }
+
+    .calendar-day.has-score {
+      cursor: pointer;
+    }
+
+    .calendar-day:not(.empty):not(.today):hover {
+      border-color: var(--primary-color);
+      transform: scale(1.05);
+    }
+
+    .calendar-day-number {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: 2px;
+      line-height: 1;
+    }
+
+    .calendar-day-positive {
+      font-size: 12px;
+      color: var(--success-color);
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    .calendar-day-negative {
+      font-size: 12px;
+      color: var(--error-color);
+      font-weight: 600;
+      line-height: 1;
+    }
+
+    /* 日期详情弹窗 */
+    .day-detail {
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+
+    .day-detail-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--bg-light);
+    }
+
+    .day-detail-item:last-child {
+      border-bottom: none;
+    }
+
+    .day-detail-task {
+      font-size: 16px;
+      color: var(--text-dark);
+    }
+
+    .day-detail-score {
+      font-size: 18px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+    }
+
+    .day-detail-score.positive {
+      color: var(--success-color);
+    }
+
+    .day-detail-score.negative {
+      color: var(--error-color);
+    }
+
+    .day-detail-total {
+      margin-top: var(--spacing-md);
+      padding-top: var(--spacing-md);
+      border-top: 2px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: var(--bg-light);
+      padding: var(--spacing-md);
+      border-radius: var(--radius-md);
+    }
+
+    .day-detail-total-label {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .day-detail-total-score {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    /* 番茄钟按钮 */
+    .pomodoro-trigger {
+      position: fixed;
+      bottom: 90px;
+      right: 20px;
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #FF6B6B, #FF8E53);
+      color: var(--white);
+      font-size: 28px;
+      box-shadow: 0 4px 12px rgba(255, 107, 107, 0.4);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-normal) ease;
+    }
+
+    .pomodoro-trigger:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 8px rgba(255, 107, 107, 0.3);
+    }
+
+    /* 番茄钟弹窗 */
+    .pomodoro-modal {
+      padding: var(--spacing-lg);
+    }
+
+    .pomodoro-display {
+      text-align: center;
+      padding: var(--spacing-xl) 0;
+    }
+
+    .pomodoro-time {
+      font-size: 64px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--primary-color);
+      transition: color var(--transition-normal) ease;
+      margin-bottom: var(--spacing-md);
+      line-height: 1;
+    }
+
+    .pomodoro-time.running {
+      color: var(--gold-color);
+    }
+
+    .pomodoro-time.overtime {
+      color: var(--success-color);
+      animation: pulse 1s ease infinite;
+    }
+
+    .pomodoro-status {
+      font-size: 16px;
+      color: var(--text-medium);
+      margin-bottom: var(--spacing-lg);
+    }
+
+    /* 时间设置 */
+    .time-input-group {
+      display: flex;
+      gap: var(--spacing-md);
+      align-items: center;
+      justify-content: center;
+      margin-bottom: var(--spacing-lg);
+    }
+
+    .time-input-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .time-input-label {
+      font-size: 14px;
+      color: var(--text-medium);
+      font-weight: 500;
+    }
+
+    .time-input {
+      width: 90px;
+      height: 56px;
+      border: 2px solid var(--border-color);
+      border-radius: var(--radius-md);
+      text-align: center;
+      font-size: 28px;
+      font-weight: 600;
+      font-family: var(--font-mono);
+      color: var(--text-dark);
+      transition: all var(--transition-normal) ease;
+    }
+
+    .time-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+      box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.1);
+    }
+
+    /* 快捷时间按钮 */
+    .quick-time-btns {
+      display: flex;
+      gap: 8px;
+      margin-bottom: var(--spacing-lg);
+      flex-wrap: wrap;
+    }
+
+    .quick-time-btn {
+      flex: 1;
+      min-width: 70px;
+      height: 40px;
+      background: var(--bg-light);
+      border: 1px solid var(--border-color);
+      color: var(--text-dark);
+      font-size: 13px;
+      font-weight: 500;
+      border-radius: var(--radius-md);
+      transition: all var(--transition-normal) ease;
+    }
+
+    .quick-time-btn:active {
+      background: var(--primary-color);
+      color: var(--white);
+      border-color: var(--primary-color);
+    }
+
+    /* 控制按钮 */
+    .pomodoro-controls {
+      display: flex;
+      gap: var(--spacing-sm);
+    }
+
+    .pomodoro-btn {
+      flex: 1;
+      height: 48px;
+      border-radius: var(--radius-md);
+      font-size: 16px;
+      font-weight: 600;
+      transition: all var(--transition-normal) ease;
+    }
+
+    .pomodoro-btn-start {
+      background: var(--primary-color);
+      color: var(--white);
+    }
+
+    .pomodoro-btn-start:active {
+      background: #3A7BC8;
+    }
+
+    .pomodoro-btn-pause {
+      background: var(--warning-color);
+      color: var(--white);
+    }
+
+    .pomodoro-btn-pause:active {
+      background: #E09D0D;
+    }
+
+    .pomodoro-btn-reset {
+      background: var(--bg-light);
+      color: var(--text-medium);
+      border: 1px solid var(--border-color);
+    }
+
+    .pomodoro-btn-reset:active {
+      background: var(--border-color);
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.7; }
+    }
+
+    /* 全屏专注模式 */
+    .pomodoro-fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      z-index: 9999;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-lg);
+    }
+
+    .pomodoro-fullscreen.show {
+      display: flex;
+    }
+
+    .fullscreen-time {
+      font-size: 120px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+      color: var(--white);
+      margin-bottom: var(--spacing-lg);
+      line-height: 1;
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .fullscreen-time.overtime {
+      color: #FF6B6B;
+      animation: pulse 1s ease infinite;
+    }
+
+    .fullscreen-status {
+      font-size: 24px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: var(--spacing-xl);
+      font-weight: 500;
+    }
+
+    .fullscreen-exit {
+      position: absolute;
+      top: 30px;
+      right: 30px;
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      color: var(--white);
+      font-size: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all var(--transition-normal) ease;
+      backdrop-filter: blur(10px);
+    }
+
+    .fullscreen-exit:active {
+      background: rgba(255, 255, 255, 0.3);
+      transform: scale(0.95);
+    }
+
+    .fullscreen-finish {
+      padding: 14px 40px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #667eea;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 50px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      transition: all var(--transition-normal) ease;
+    }
+
+    .fullscreen-finish:active {
+      transform: scale(0.95);
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    /* 烟花庆祝效果 */
+    .celebration-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      z-index: 10000;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: var(--spacing-lg);
+    }
+
+    .celebration-overlay.show {
+      display: flex;
+    }
+
+    .celebration-content {
+      text-align: center;
+      animation: celebrationBounce 0.6s ease;
+    }
+
+    .celebration-icon {
+      font-size: 100px;
+      margin-bottom: var(--spacing-lg);
+      animation: celebrationRotate 0.8s ease;
+    }
+
+    .celebration-title {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--white);
+      margin-bottom: var(--spacing-md);
+      text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    }
+
+    .celebration-message {
+      font-size: 24px;
+      color: rgba(255, 255, 255, 0.9);
+      margin-bottom: var(--spacing-xl);
+    }
+
+    .celebration-close {
+      padding: 14px 40px;
+      background: rgba(255, 255, 255, 0.95);
+      color: #667eea;
+      font-size: 18px;
+      font-weight: 600;
+      border-radius: 50px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      transition: all var(--transition-normal) ease;
+    }
+
+    .celebration-close:active {
+      transform: scale(0.95);
+    }
+
+    /* 烟花粒子 */
+    .firework {
+      position: absolute;
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      animation: fireworkExplode 1s ease-out forwards;
+    }
+
+    @keyframes celebrationBounce {
+      0% { transform: scale(0) translateY(100px); opacity: 0; }
+      50% { transform: scale(1.1) translateY(0); }
+      100% { transform: scale(1) translateY(0); opacity: 1; }
+    }
+
+    @keyframes celebrationRotate {
+      0% { transform: rotate(0deg) scale(0); }
+      50% { transform: rotate(180deg) scale(1.2); }
+      100% { transform: rotate(360deg) scale(1); }
+    }
+
+    @keyframes fireworkExplode {
+      0% {
+        opacity: 1;
+        transform: translate(0, 0);
+      }
+      100% {
+        opacity: 0;
+        transform: translate(var(--tx), var(--ty));
+      }
+    }
+
+    @media (max-width: 767px) {
+      .page-container {
+        padding-bottom: 65px;
+      }
+
+      .ingot-container {
+        width: 95%;
+        margin: 8px auto;
+        padding: 8px 12px;
+      }
+
+      .calendar-card {
+        width: 95%;
+        padding: 11px;
+      }
+
+      .ingot-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 26px;
+      }
+
+      .ingot-label {
+        font-size: 11px;
+      }
+
+      .ingot-number {
+        font-size: 26px;
+      }
+
+      .calendar-header {
+        margin-bottom: 7px;
+        padding-bottom: 7px;
+      }
+
+      .calendar-title {
+        font-size: 18px;
+      }
+
+      .calendar-nav button {
+        width: 31px;
+        height: 31px;
+        font-size: 15px;
+      }
+
+      .calendar-weekday {
+        font-size: 12px;
+        padding: 4px 0;
+      }
+
+      .calendar-days {
+        gap: 4px;
+      }
+
+      .calendar-day {
+        min-height: 55px;
+        padding: 5px 3px;
+        font-size: 13px;
+      }
+
+      .calendar-day-number {
+        font-size: 15px;
+      }
+
+      .calendar-day-positive,
+      .calendar-day-negative {
+        font-size: 11px;
+      }
+
+      .fullscreen-time {
+        font-size: 80px;
+      }
+
+      .fullscreen-status {
+        font-size: 18px;
+      }
+
+      .celebration-icon {
+        font-size: 80px;
+      }
+
+      .celebration-title {
+        font-size: 36px;
+      }
+
+      .celebration-message {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <!-- 小元宝总分 -->
+    <div class="ingot-container" onclick="window.location.href='records.html'">
+      <div class="ingot-icon">💰</div>
+      <div class="ingot-score">
+        <div class="ingot-label">我的积分</div>
+        <div class="ingot-number" id="totalScore">0</div>
+      </div>
+    </div>
+
+    <!-- 日历仪表盘 -->
+    <div class="calendar-card">
+      <div class="calendar-header">
+        <h2 class="calendar-title" id="calendarTitle">2025年1月</h2>
+        <div class="calendar-nav">
+          <button type="button" onclick="previousMonth()">◀</button>
+          <button type="button" onclick="nextMonth()">▶</button>
+        </div>
+      </div>
+
+      <div class="calendar-weekdays">
+        <div class="calendar-weekday">日</div>
+        <div class="calendar-weekday">一</div>
+        <div class="calendar-weekday">二</div>
+        <div class="calendar-weekday">三</div>
+        <div class="calendar-weekday">四</div>
+        <div class="calendar-weekday">五</div>
+        <div class="calendar-weekday">六</div>
+      </div>
+
+      <div class="calendar-days" id="calendarDays"></div>
+    </div>
+  </div>
+
+  <!-- 番茄钟浮动按钮 -->
+  <button type="button" class="pomodoro-trigger" onclick="openPomodoroModal()">🍅</button>
+
+  <!-- 全屏专注模式 -->
+  <div class="pomodoro-fullscreen" id="pomodoroFullscreen">
+    <button type="button" class="fullscreen-exit" onclick="exitFullscreen()">✕</button>
+    <div class="fullscreen-time" id="fullscreenTime">25:00</div>
+    <div class="fullscreen-status" id="fullscreenStatus">专注中...</div>
+    <button type="button" class="fullscreen-finish" onclick="finishPomodoro()">完成任务 🎉</button>
+  </div>
+
+  <!-- 庆祝页面 -->
+  <div class="celebration-overlay" id="celebrationOverlay">
+    <div class="celebration-content">
+      <div class="celebration-icon">🎉</div>
+      <div class="celebration-title">恭喜梨果</div>
+      <div class="celebration-message">完成任务！</div>
+      <button type="button" class="celebration-close" onclick="closeCelebration()">太棒了！</button>
+    </div>
+  </div>
+
+  <!-- 底部导航栏 -->
+  <div class="bottom-nav">
+    <a href="index.html" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="#4A90E2">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+      </svg>
+      <span>首页</span>
+    </a>
+    <a href="gifts.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="#666">
+        <path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/>
+      </svg>
+      <span>礼物</span>
+    </a>
+    <a href="records.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="#666">
+        <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+      </svg>
+      <span>记录</span>
+    </a>
+    <a href="parent-login.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="#666">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+      </svg>
+      <span>家长</span>
+    </a>
+  </div>
+
+  <!-- Supabase 客户端库 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase 配置 -->
+  <script src="js/supabase-config.js?v=1"></script>
+  <script src="js/common.js?v=6"></script>
+  <script>
+    // 番茄时钟状态
+    let pomodoroTimer = null;
+    let pomodoroTotalSeconds = 25 * 60; // 默认25分钟
+    let pomodoroRemainingSeconds = pomodoroTotalSeconds;
+    let pomodoroIsRunning = false;
+    let pomodoroIsOvertime = false;
+
+    // 加载保存的番茄钟设置
+    function loadPomodoroSettings() {
+      const saved = localStorage.getItem('pomodoro_duration');
+      if (saved) {
+        pomodoroTotalSeconds = parseInt(saved);
+        pomodoroRemainingSeconds = pomodoroTotalSeconds;
+      }
+      updatePomodoroDisplay();
+    }
+
+    // 保存番茄钟设置
+    function savePomodoroSettings(minutes, seconds) {
+      pomodoroTotalSeconds = minutes * 60 + seconds;
+      pomodoroRemainingSeconds = pomodoroTotalSeconds;
+      localStorage.setItem('pomodoro_duration', pomodoroTotalSeconds);
+      updatePomodoroDisplay();
+    }
+
+    // 更新番茄钟显示
+    function updatePomodoroDisplay() {
+      // 如果弹窗打开，更新弹窗显示
+      updateModalDisplay();
+    }
+
+    // 开始番茄钟
+    function startPomodoro() {
+      if (pomodoroIsRunning) return;
+
+      pomodoroIsRunning = true;
+
+      pomodoroTimer = setInterval(() => {
+        pomodoroRemainingSeconds--;
+
+        // 检查是否到达0点
+        if (pomodoroRemainingSeconds === 0) {
+          pomodoroIsOvertime = true;
+          playPomodoroAlert();
+        }
+
+        updatePomodoroDisplay();
+        updateFullscreenDisplay();
+      }, 1000);
+
+      updatePomodoroDisplay();
+      updateFullscreenDisplay();
+    }
+
+    // 暂停番茄钟
+    function pausePomodoro() {
+      if (!pomodoroIsRunning) return;
+
+      pomodoroIsRunning = false;
+      clearInterval(pomodoroTimer);
+
+      updatePomodoroDisplay();
+      updateFullscreenDisplay();
+    }
+
+    // 重置番茄钟
+    function resetPomodoro() {
+      pausePomodoro();
+      pomodoroRemainingSeconds = pomodoroTotalSeconds;
+      pomodoroIsOvertime = false;
+
+      updatePomodoroDisplay();
+      updateFullscreenDisplay();
+    }
+
+    // 播放提示音（使用Web Audio API）
+    function playPomodoroAlert() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+        const oscillator = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+
+        oscillator.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+
+        gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+        oscillator.start(audioCtx.currentTime);
+        oscillator.stop(audioCtx.currentTime + 0.5);
+      } catch (e) {
+        console.log('Audio not supported');
+      }
+    }
+
+    // 打开番茄钟弹窗
+    function openPomodoroModal() {
+      const currentMinutes = Math.floor(pomodoroTotalSeconds / 60);
+      const currentSeconds = pomodoroTotalSeconds % 60;
+
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.id = 'pomodoroModalOverlay';
+      overlay.innerHTML = `
+        <div class="modal pomodoro-modal">
+          <h3 class="modal-title">🍅 番茄时钟</h3>
+
+          <!-- 时间显示 -->
+          <div class="pomodoro-display">
+            <div class="pomodoro-time" id="pomodoroTimeDisplay">25:00</div>
+            <div class="pomodoro-status" id="pomodoroStatusDisplay">准备开始</div>
+          </div>
+
+          <!-- 时间设置 -->
+          <div class="time-input-group">
+            <div class="time-input-wrapper">
+              <label class="time-input-label">分钟</label>
+              <input type="number" class="time-input" id="pomodoroMinutes"
+                     value="${currentMinutes}" min="0" max="99"
+                     onchange="updatePomodoroPreview()" ${pomodoroIsRunning ? 'disabled' : ''}>
+            </div>
+            <div style="font-size: 32px; font-weight: 700; color: var(--text-medium);">:</div>
+            <div class="time-input-wrapper">
+              <label class="time-input-label">秒钟</label>
+              <input type="number" class="time-input" id="pomodoroSeconds"
+                     value="${currentSeconds}" min="0" max="59"
+                     onchange="updatePomodoroPreview()" ${pomodoroIsRunning ? 'disabled' : ''}>
+            </div>
+          </div>
+
+          <!-- 快捷时间 -->
+          <div class="quick-time-btns">
+            <button class="quick-time-btn" onclick="setQuickTime(15, 0)" ${pomodoroIsRunning ? 'disabled' : ''}>15分钟</button>
+            <button class="quick-time-btn" onclick="setQuickTime(25, 0)" ${pomodoroIsRunning ? 'disabled' : ''}>25分钟</button>
+            <button class="quick-time-btn" onclick="setQuickTime(30, 0)" ${pomodoroIsRunning ? 'disabled' : ''}>30分钟</button>
+            <button class="quick-time-btn" onclick="setQuickTime(45, 0)" ${pomodoroIsRunning ? 'disabled' : ''}>45分钟</button>
+          </div>
+
+          <!-- 控制按钮 -->
+          <div class="pomodoro-controls">
+            <button type="button" class="pomodoro-btn pomodoro-btn-start" id="modalPomodoroStart"
+                    onclick="startPomodoroFromModal()" ${pomodoroIsRunning ? 'style="display:none;"' : ''}>开始</button>
+            <button type="button" class="pomodoro-btn pomodoro-btn-pause" id="modalPomodoroPause"
+                    onclick="pausePomodoroFromModal()" ${!pomodoroIsRunning ? 'style="display:none;"' : ''}>暂停</button>
+            <button type="button" class="pomodoro-btn pomodoro-btn-reset" onclick="resetPomodoroFromModal()">重置</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      setTimeout(() => overlay.classList.add('show'), 10);
+
+      // 更新弹窗中的显示
+      updateModalDisplay();
+
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          closePomodoroModal();
+        }
+      };
+    }
+
+    // 关闭番茄钟弹窗
+    function closePomodoroModal() {
+      const overlay = document.getElementById('pomodoroModalOverlay');
+      if (overlay) {
+        overlay.classList.remove('show');
+        setTimeout(() => overlay.remove(), 200);
+      }
+    }
+
+    // 从弹窗开始番茄钟
+    function startPomodoroFromModal() {
+      // 应用设置
+      const minutes = parseInt(document.getElementById('pomodoroMinutes').value) || 0;
+      const seconds = parseInt(document.getElementById('pomodoroSeconds').value) || 0;
+
+      if (minutes === 0 && seconds === 0) {
+        utils.showToast('时间不能为0', 'warning');
+        return;
+      }
+
+      if (seconds >= 60) {
+        utils.showToast('秒数不能超过59', 'warning');
+        return;
+      }
+
+      savePomodoroSettings(minutes, seconds);
+
+      // 开始计时
+      startPomodoro();
+
+      // 关闭弹窗
+      closePomodoroModal();
+
+      // 进入全屏专注模式
+      enterFullscreen();
+    }
+
+    // 从弹窗暂停番茄钟
+    function pausePomodoroFromModal() {
+      pausePomodoro();
+      document.getElementById('modalPomodoroStart').style.display = 'block';
+      document.getElementById('modalPomodoroPause').style.display = 'none';
+    }
+
+    // 从弹窗重置番茄钟
+    function resetPomodoroFromModal() {
+      resetPomodoro();
+
+      // 启用时间输入
+      document.getElementById('pomodoroMinutes').disabled = false;
+      document.getElementById('pomodoroSeconds').disabled = false;
+      document.querySelectorAll('.quick-time-btn').forEach(btn => btn.disabled = false);
+
+      // 更新按钮
+      document.getElementById('modalPomodoroStart').style.display = 'block';
+      document.getElementById('modalPomodoroPause').style.display = 'none';
+
+      updateModalDisplay();
+    }
+
+    // 更新弹窗中的显示
+    function updateModalDisplay() {
+      const timeElement = document.getElementById('pomodoroTimeDisplay');
+      const statusElement = document.getElementById('pomodoroStatusDisplay');
+
+      if (!timeElement || !statusElement) return;
+
+      const absSeconds = Math.abs(pomodoroRemainingSeconds);
+      const minutes = Math.floor(absSeconds / 60);
+      const seconds = absSeconds % 60;
+      const sign = pomodoroRemainingSeconds < 0 ? '-' : '';
+
+      timeElement.textContent = `${sign}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+      // 更新状态样式
+      timeElement.classList.remove('running', 'overtime');
+      if (pomodoroIsOvertime) {
+        timeElement.classList.add('overtime');
+        statusElement.textContent = '已超时！';
+      } else if (pomodoroIsRunning) {
+        timeElement.classList.add('running');
+        statusElement.textContent = '专注中...';
+      } else if (pomodoroRemainingSeconds === pomodoroTotalSeconds) {
+        statusElement.textContent = '准备开始';
+      } else {
+        statusElement.textContent = '已暂停';
+      }
+    }
+
+    // 更新预览显示
+    function updatePomodoroPreview() {
+      const minutes = parseInt(document.getElementById('pomodoroMinutes').value) || 0;
+      const seconds = parseInt(document.getElementById('pomodoroSeconds').value) || 0;
+
+      const timeElement = document.getElementById('pomodoroTimeDisplay');
+      if (timeElement && !pomodoroIsRunning) {
+        timeElement.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      }
+    }
+
+    // 快捷设置时间
+    function setQuickTime(minutes, seconds) {
+      document.getElementById('pomodoroMinutes').value = minutes;
+      document.getElementById('pomodoroSeconds').value = seconds;
+      updatePomodoroPreview();
+    }
+
+    // 进入全屏专注模式
+    function enterFullscreen() {
+      const fullscreen = document.getElementById('pomodoroFullscreen');
+      fullscreen.classList.add('show');
+      updateFullscreenDisplay();
+    }
+
+    // 退出全屏专注模式
+    function exitFullscreen() {
+      const fullscreen = document.getElementById('pomodoroFullscreen');
+      fullscreen.classList.remove('show');
+
+      // 暂停计时
+      if (pomodoroIsRunning) {
+        pausePomodoro();
+      }
+
+      // 确保不触发浏览器原生全屏API
+      if (document.fullscreenElement || document.webkitFullscreenElement ||
+          document.mozFullScreenElement || document.msFullscreenElement) {
+        try {
+          if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+          } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+          } else if (document.mozCancelFullScreen) {
+            document.mozCancelFullScreen();
+          } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+          }
+        } catch (e) {
+          // 忽略全屏API错误
+        }
+      }
+    }
+
+    // 更新全屏显示
+    function updateFullscreenDisplay() {
+      const timeElement = document.getElementById('fullscreenTime');
+      const statusElement = document.getElementById('fullscreenStatus');
+
+      if (!timeElement || !statusElement) return;
+
+      const absSeconds = Math.abs(pomodoroRemainingSeconds);
+      const minutes = Math.floor(absSeconds / 60);
+      const seconds = absSeconds % 60;
+      const sign = pomodoroRemainingSeconds < 0 ? '-' : '';
+
+      timeElement.textContent = `${sign}${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+
+      // 更新状态样式
+      timeElement.classList.remove('overtime');
+      if (pomodoroIsOvertime) {
+        timeElement.classList.add('overtime');
+        statusElement.textContent = '已超时！';
+      } else if (pomodoroIsRunning) {
+        statusElement.textContent = '专注中...';
+      } else {
+        statusElement.textContent = '已暂停';
+      }
+    }
+
+    // 完成番茄钟任务
+    function finishPomodoro() {
+      // 暂停计时
+      if (pomodoroIsRunning) {
+        pausePomodoro();
+      }
+
+      // 退出全屏
+      const fullscreen = document.getElementById('pomodoroFullscreen');
+      fullscreen.classList.remove('show');
+
+      // 显示庆祝页面
+      showCelebration();
+    }
+
+    // 显示庆祝效果
+    function showCelebration() {
+      const overlay = document.getElementById('celebrationOverlay');
+      overlay.classList.add('show');
+
+      // 创建烟花效果
+      createFireworks();
+
+      // 播放庆祝音效
+      playCelebrationSound();
+    }
+
+    // 关闭庆祝页面
+    function closeCelebration() {
+      const overlay = document.getElementById('celebrationOverlay');
+      overlay.classList.remove('show');
+
+      // 清除所有烟花
+      document.querySelectorAll('.firework').forEach(fw => fw.remove());
+
+      // 重置番茄钟
+      resetPomodoro();
+    }
+
+    // 创建烟花效果
+    function createFireworks() {
+      const overlay = document.getElementById('celebrationOverlay');
+      const colors = ['#FF6B6B', '#4ECDC4', '#45B7D1', '#FFA07A', '#98D8C8', '#F7DC6F', '#BB8FCE', '#85C1E2'];
+
+      // 创建多组烟花
+      for (let i = 0; i < 5; i++) {
+        setTimeout(() => {
+          const x = Math.random() * window.innerWidth;
+          const y = Math.random() * (window.innerHeight * 0.6);
+
+          // 每组烟花30个粒子
+          for (let j = 0; j < 30; j++) {
+            const firework = document.createElement('div');
+            firework.className = 'firework';
+            firework.style.left = x + 'px';
+            firework.style.top = y + 'px';
+            firework.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+
+            // 随机方向
+            const angle = (Math.PI * 2 * j) / 30;
+            const velocity = 100 + Math.random() * 100;
+            const tx = Math.cos(angle) * velocity;
+            const ty = Math.sin(angle) * velocity;
+
+            firework.style.setProperty('--tx', tx + 'px');
+            firework.style.setProperty('--ty', ty + 'px');
+
+            overlay.appendChild(firework);
+
+            // 1秒后移除
+            setTimeout(() => firework.remove(), 1000);
+          }
+        }, i * 300);
+      }
+    }
+
+    // 播放庆祝音效
+    function playCelebrationSound() {
+      try {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        // 播放3个音符组成的欢快旋律
+        const notes = [523.25, 659.25, 783.99]; // C5, E5, G5
+        notes.forEach((freq, index) => {
+          setTimeout(() => {
+            const oscillator = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+
+            oscillator.frequency.value = freq;
+            oscillator.type = 'sine';
+
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.5);
+
+            oscillator.start(audioCtx.currentTime);
+            oscillator.stop(audioCtx.currentTime + 0.5);
+          }, index * 150);
+        });
+      } catch (e) {
+        console.log('Audio not supported');
+      }
+    }
+
+    // 当前显示的年月
+    let currentYear = new Date().getFullYear();
+    let currentMonth = new Date().getMonth();
+
+    // 初始化页面
+    async function init() {
+      loadPomodoroSettings(); // 加载番茄钟设置
+
+      // 等待云同步完成后再渲染
+      if (window.supabaseSync && window.supabaseSync.enabled) {
+        try {
+          await window.supabaseSync.init();
+          console.log('✅ 云同步完成,开始渲染页面');
+
+          // 启用实时监听 - 当其他终端修改数据时自动更新页面
+          window.supabaseSync.enableRealtime((tableName) => {
+            console.log(`🔄 ${tableName} 数据已更新,刷新页面显示`);
+            updateTotalScore();
+            renderCalendar();
+          });
+        } catch (error) {
+          console.error('❌ 云同步失败,使用本地数据:', error);
+        }
+      }
+
+      updateTotalScore();
+      renderCalendar();
+    }
+
+    // 更新总积分
+    function updateTotalScore() {
+      const totalScore = dataManager.getTotalScore();
+      document.getElementById('totalScore').textContent = totalScore;
+
+      // 添加脉冲动画
+      const scoreElement = document.getElementById('totalScore');
+      scoreElement.style.animation = 'none';
+      setTimeout(() => {
+        scoreElement.style.animation = 'pulse 0.5s ease';
+      }, 10);
+    }
+
+    // 渲染日历
+    function renderCalendar() {
+      const title = document.getElementById('calendarTitle');
+      title.textContent = `${currentYear}年${currentMonth + 1}月`;
+
+      const daysContainer = document.getElementById('calendarDays');
+      daysContainer.innerHTML = '';
+
+      // 获取当月第一天和最后一天
+      const firstDay = new Date(currentYear, currentMonth, 1);
+      const lastDay = new Date(currentYear, currentMonth + 1, 0);
+      const firstDayWeek = firstDay.getDay();
+      const daysInMonth = lastDay.getDate();
+
+      // 获取当月积分数据
+      const dailyScores = dataManager.getDailyScores(currentMonth, currentYear);
+
+      // 填充空白天数
+      for (let i = 0; i < firstDayWeek; i++) {
+        const emptyDay = document.createElement('div');
+        emptyDay.className = 'calendar-day empty';
+        daysContainer.appendChild(emptyDay);
+      }
+
+      // 填充日期
+      const today = new Date();
+      for (let day = 1; day <= daysInMonth; day++) {
+        const dayElement = document.createElement('div');
+        dayElement.className = 'calendar-day';
+
+        const isToday = day === today.getDate() &&
+                       currentMonth === today.getMonth() &&
+                       currentYear === today.getFullYear();
+
+        if (isToday) {
+          dayElement.classList.add('today');
+        }
+
+        const dayNumber = document.createElement('div');
+        dayNumber.className = 'calendar-day-number';
+        dayNumber.textContent = day;
+        dayElement.appendChild(dayNumber);
+
+        // 显示积分
+        if (dailyScores[day]) {
+          dayElement.classList.add('has-score');
+          if (dailyScores[day].positive > 0) {
+            const positive = document.createElement('div');
+            positive.className = 'calendar-day-positive';
+            positive.textContent = '+' + dailyScores[day].positive;
+            dayElement.appendChild(positive);
+          }
+          if (dailyScores[day].negative < 0) {
+            const negative = document.createElement('div');
+            negative.className = 'calendar-day-negative';
+            negative.textContent = dailyScores[day].negative;
+            dayElement.appendChild(negative);
+          }
+
+          dayElement.onclick = () => showDayDetail(day);
+        }
+
+        daysContainer.appendChild(dayElement);
+      }
+    }
+
+    // 显示日期详情
+    function showDayDetail(day) {
+      const date = new Date(currentYear, currentMonth, day);
+      const records = dataManager.getRecordsByDate(date);
+
+      if (records.length === 0) return;
+
+      let detailHTML = '<div class="day-detail">';
+      let totalScore = 0;
+
+      records.forEach(record => {
+        totalScore += record.score;
+        const scoreClass = record.score > 0 ? 'positive' : 'negative';
+        const scoreText = record.score > 0 ? '+' + record.score : record.score;
+
+        detailHTML += `
+          <div class="day-detail-item">
+            <div class="day-detail-task">${record.taskName}</div>
+            <div class="day-detail-score ${scoreClass}">${scoreText}</div>
+          </div>
+        `;
+      });
+
+      const totalClass = totalScore > 0 ? 'positive' : 'negative';
+      const totalText = totalScore > 0 ? '+' + totalScore : totalScore;
+
+      detailHTML += `
+        <div class="day-detail-total">
+          <div class="day-detail-total-label">当日总计</div>
+          <div class="day-detail-total-score ${totalClass}">${totalText}</div>
+        </div>
+      </div>`;
+
+      const overlay = document.createElement('div');
+      overlay.className = 'modal-overlay';
+      overlay.innerHTML = `
+        <div class="modal">
+          <h3 class="modal-title">${currentMonth + 1}月${day}日</h3>
+          ${detailHTML}
+          <div class="modal-actions">
+            <button class="btn-primary btn-full" onclick="this.closest('.modal-overlay').remove()">关闭</button>
+          </div>
+        </div>
+      `;
+
+      document.body.appendChild(overlay);
+      setTimeout(() => overlay.classList.add('show'), 10);
+
+      overlay.onclick = (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('show');
+          setTimeout(() => overlay.remove(), 200);
+        }
+      };
+    }
+
+    // 上一个月
+    function previousMonth() {
+      currentMonth--;
+      if (currentMonth < 0) {
+        currentMonth = 11;
+        currentYear--;
+      }
+      renderCalendar();
+    }
+
+    // 下一个月
+    function nextMonth() {
+      currentMonth++;
+      if (currentMonth > 11) {
+        currentMonth = 0;
+        currentYear++;
+      }
+      renderCalendar();
+    }
+
+    // 全局Promise rejection处理器（防止全屏API错误）
+    window.addEventListener('unhandledrejection', function(event) {
+      // 忽略全屏API相关的错误
+      if (event.reason && event.reason.message &&
+          (event.reason.message.includes('exitFullscreen') ||
+           event.reason.message.includes('fullscreen'))) {
+        event.preventDefault();
+        console.log('忽略全屏API错误:', event.reason.message);
+      }
+    });
+
+    // 页面加载完成后初始化
+    init();
+  </script>
+</body>
+</html>

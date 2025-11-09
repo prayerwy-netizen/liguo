@@ -1,0 +1,392 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>我的记录 - 梨果礼物兑换系统</title>
+  <link rel="stylesheet" href="css/common.css?v=5">
+  <link rel="stylesheet" href="css/components.css?v=5">
+  <style>
+    .page-container {
+      min-height: 100vh;
+      padding: var(--spacing-lg) var(--spacing-md) 100px;
+      background: var(--bg-light);
+    }
+
+    .page-header {
+      margin-bottom: var(--spacing-lg);
+      text-align: center;
+    }
+
+    .page-title {
+      font-size: 28px;
+      font-weight: 600;
+      color: var(--text-dark);
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .total-score-display {
+      font-size: 16px;
+      color: var(--text-medium);
+    }
+
+    .total-score-number {
+      color: var(--gold-color);
+      font-weight: 700;
+      font-size: 24px;
+      font-family: var(--font-mono);
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: var(--spacing-sm);
+      margin-bottom: var(--spacing-lg);
+      padding: 0 var(--spacing-sm);
+    }
+
+    .filter-tab {
+      flex: 1;
+      height: 40px;
+      background: var(--white);
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      color: var(--text-medium);
+      cursor: pointer;
+      transition: all var(--transition-normal) ease;
+    }
+
+    .filter-tab.active {
+      background: var(--primary-color);
+      color: var(--white);
+      border-color: var(--primary-color);
+    }
+
+    .records-list {
+      display: flex;
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    .record-card {
+      background: var(--white);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-normal);
+      padding: var(--spacing-md);
+      transition: all var(--transition-normal) ease;
+    }
+
+    .record-card:active {
+      transform: translateY(-2px);
+      box-shadow: var(--shadow-deep);
+    }
+
+    .record-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--spacing-sm);
+    }
+
+    .record-date {
+      font-size: 14px;
+      color: var(--text-light);
+    }
+
+    .record-score {
+      font-size: 24px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+
+    .record-score.positive {
+      color: var(--success-color);
+    }
+
+    .record-score.negative {
+      color: var(--error-color);
+    }
+
+    .record-task {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin-bottom: var(--spacing-xs);
+    }
+
+    .record-note {
+      font-size: 14px;
+      color: var(--text-medium);
+      line-height: 1.5;
+      padding: var(--spacing-sm);
+      background: var(--bg-light);
+      border-radius: var(--radius-sm);
+      margin-top: var(--spacing-sm);
+    }
+
+    .month-divider {
+      display: flex;
+      align-items: center;
+      margin: var(--spacing-lg) 0;
+      color: var(--text-light);
+      font-size: 14px;
+    }
+
+    .month-divider::before,
+    .month-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: var(--border-color);
+    }
+
+    .month-divider span {
+      padding: 0 var(--spacing-md);
+    }
+
+    .stats-card {
+      background: linear-gradient(135deg, var(--primary-color), var(--primary-light));
+      border-radius: var(--radius-lg);
+      padding: var(--spacing-lg);
+      margin-bottom: var(--spacing-lg);
+      box-shadow: var(--shadow-deep);
+      color: var(--white);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-md);
+      margin-top: var(--spacing-md);
+    }
+
+    .stat-item {
+      text-align: center;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      opacity: 0.9;
+      margin-bottom: 4px;
+    }
+
+    .stat-value {
+      font-size: 20px;
+      font-weight: 700;
+      font-family: var(--font-mono);
+    }
+  </style>
+</head>
+<body>
+  <div class="page-container">
+    <div class="page-header">
+      <h1 class="page-title">📊 我的记录</h1>
+      <div class="total-score-display">
+        当前总积分：<span class="total-score-number" id="totalScore">0</span>
+      </div>
+    </div>
+
+    <!-- 统计卡片 -->
+    <div class="stats-card">
+      <div style="font-size: 16px; font-weight: 600; margin-bottom: 8px;">本月统计</div>
+      <div class="stats-grid">
+        <div class="stat-item">
+          <div class="stat-label">记录总数</div>
+          <div class="stat-value" id="statTotal">0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">正向得分</div>
+          <div class="stat-value" id="statPositive">+0</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-label">负向扣分</div>
+          <div class="stat-value" id="statNegative">0</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 筛选标签 -->
+    <div class="filter-tabs">
+      <button class="filter-tab active" onclick="filterRecords('all')">全部</button>
+      <button class="filter-tab" onclick="filterRecords('positive')">正向得分</button>
+      <button class="filter-tab" onclick="filterRecords('negative')">负向扣分</button>
+    </div>
+
+    <!-- 记录列表 -->
+    <div class="records-list" id="recordsList"></div>
+
+    <div class="empty-state" id="emptyState" style="display: none;">
+      <div class="empty-state-icon">📝</div>
+      <div class="empty-state-text">还没有记录哦，快去完成任务吧！</div>
+    </div>
+  </div>
+
+  <!-- 底部导航栏 -->
+  <div class="bottom-nav">
+    <a href="index.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="#666">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+      </svg>
+      <span>首页</span>
+    </a>
+    <a href="gifts.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="#666">
+        <path d="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z"/>
+      </svg>
+      <span>礼物</span>
+    </a>
+    <a href="records.html" class="nav-item active">
+      <svg viewBox="0 0 24 24" fill="#4A90E2">
+        <path d="M19 3h-4.18C14.4 1.84 13.3 1 12 1c-1.3 0-2.4.84-2.82 2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-7 0c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm2 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/>
+      </svg>
+      <span>记录</span>
+    </a>
+    <a href="parent-login.html" class="nav-item">
+      <svg viewBox="0 0 24 24" fill="#666">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z"/>
+      </svg>
+      <span>家长</span>
+    </a>
+  </div>
+
+  <!-- Supabase 客户端库 -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Supabase 配置 -->
+  <script src="js/supabase-config.js?v=1"></script>
+  <script src="js/common.js?v=5"></script>
+  <script>
+    let currentFilter = 'all';
+    let allRecords = [];
+
+    // 初始化
+    async function init() {
+      // 等待云同步完成
+      if (window.supabaseSync && window.supabaseSync.enabled) {
+        try {
+          await window.supabaseSync.init();
+          console.log('✅ 云同步完成,开始渲染页面');
+
+          // 启用实时监听 - 当其他终端修改数据时自动更新页面
+          window.supabaseSync.enableRealtime((tableName) => {
+            console.log(`🔄 ${tableName} 数据已更新,刷新记录列表`);
+            refreshData();
+          });
+        } catch (error) {
+          console.error('❌ 云同步失败,使用本地数据:', error);
+        }
+      }
+
+      refreshData();
+    }
+
+    // 刷新数据显示
+    function refreshData() {
+      // 更新总积分
+      const totalScore = dataManager.getTotalScore();
+      document.getElementById('totalScore').textContent = totalScore;
+
+      // 加载所有记录
+      allRecords = dataManager.getRecords().sort((a, b) => new Date(b.date) - new Date(a.date));
+
+      // 计算本月统计
+      updateMonthStats();
+
+      // 渲染记录
+      renderRecords();
+    }
+
+    // 更新本月统计
+    function updateMonthStats() {
+      const now = new Date();
+      const currentMonth = now.getMonth();
+      const currentYear = now.getFullYear();
+
+      const monthRecords = allRecords.filter(record => {
+        const recordDate = new Date(record.date);
+        return recordDate.getMonth() === currentMonth && recordDate.getFullYear() === currentYear;
+      });
+
+      const total = monthRecords.length;
+      const positive = monthRecords.filter(r => r.score > 0).reduce((sum, r) => sum + r.score, 0);
+      const negative = monthRecords.filter(r => r.score < 0).reduce((sum, r) => sum + r.score, 0);
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statPositive').textContent = '+' + positive;
+      document.getElementById('statNegative').textContent = negative;
+    }
+
+    // 筛选记录
+    function filterRecords(type) {
+      currentFilter = type;
+
+      // 更新标签状态
+      document.querySelectorAll('.filter-tab').forEach(tab => tab.classList.remove('active'));
+      event.target.classList.add('active');
+
+      // 重新渲染
+      renderRecords();
+    }
+
+    // 渲染记录列表
+    function renderRecords() {
+      const recordsList = document.getElementById('recordsList');
+      const emptyState = document.getElementById('emptyState');
+
+      // 筛选记录
+      let filteredRecords = allRecords;
+      if (currentFilter === 'positive') {
+        filteredRecords = allRecords.filter(r => r.score > 0);
+      } else if (currentFilter === 'negative') {
+        filteredRecords = allRecords.filter(r => r.score < 0);
+      }
+
+      if (filteredRecords.length === 0) {
+        recordsList.innerHTML = '';
+        emptyState.style.display = 'block';
+        return;
+      }
+
+      emptyState.style.display = 'none';
+      recordsList.innerHTML = '';
+
+      let lastMonth = '';
+
+      filteredRecords.forEach(record => {
+        const recordDate = new Date(record.date);
+        const monthKey = `${recordDate.getFullYear()}-${recordDate.getMonth()}`;
+
+        // 添加月份分隔线
+        if (monthKey !== lastMonth) {
+          lastMonth = monthKey;
+          const divider = document.createElement('div');
+          divider.className = 'month-divider';
+          divider.innerHTML = `<span>${recordDate.getFullYear()}年${recordDate.getMonth() + 1}月</span>`;
+          recordsList.appendChild(divider);
+        }
+
+        // 创建记录卡片
+        const card = document.createElement('div');
+        card.className = 'record-card';
+
+        const scoreClass = record.score > 0 ? 'positive' : 'negative';
+        const scoreText = record.score > 0 ? '+' + record.score : record.score;
+        const dateStr = utils.formatDate(recordDate);
+
+        card.innerHTML = `
+          <div class="record-header">
+            <div class="record-date">${dateStr}</div>
+            <div class="record-score ${scoreClass}">${scoreText}</div>
+          </div>
+          <div class="record-task">${record.taskName}</div>
+          ${record.note ? `<div class="record-note">📝 ${record.note}</div>` : ''}
+        `;
+
+        recordsList.appendChild(card);
+      });
+    }
+
+    // 页面加载完成后初始化
+    init();
+  </script>
+</body>
+</html>
